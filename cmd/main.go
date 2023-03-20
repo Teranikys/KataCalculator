@@ -18,11 +18,15 @@ func main() {
 		fmt.Println("Введите арифметическое выражение, состоящее из двух операндов и одного оператора через пробел.")
 		fmt.Println("Введите 0, чтобы выйти из программы:")
 		input, _ := reader.ReadString('\n')
-		//input = strings.Replace(input, " ", "", -1)
 		input = strings.TrimSpace(input)
 		splittedInput := strings.Split(input, " ")
+		// Используем регулярное выражение для проверки на соответствие формату математической операции - два операнда
+		//и один оператор (+, -, /, *)
 		matched, _ := regexp.MatchString(`\A[0-9VIX]+ [+*\-/] [0-9VIX]+\z`, input)
+		//Проверка на количество компонентов строки(Можно было бы это оставить на регулярное выражение но в примерных
+		//тестах ошибочные входные данных "1" и "1 + 2 + 3" имеют разные коды ошибок, поэтому использую проверку на длину)
 		if len(splittedInput) < 3 {
+			//Проверяем не равна ли строка коду выхода из приложения
 			if len(splittedInput) == 1 {
 				exitCode, _ := strconv.Atoi(input)
 				if exitCode == 0 {
@@ -31,11 +35,16 @@ func main() {
 			}
 			fmt.Println("Вывод ошибки, так как строка не является математической операцией.")
 			break
-		} else if !matched {
-			fmt.Println("Вывод ошибки, так как формат математической операции не удовлетворяет заданию — два операнда и один оператор (+, -, /, *).")
+		} else
+		// Проверка на соответствие формату математической операции - два операнда и один оператор (+, -, /, *)
+		if !matched {
+			fmt.Println("Вывод ошибки, так как формат математической операции не удовлетворяет заданию — два " +
+				"операнда и один оператор (+, -, /, *).")
 			break
 		}
+		// Проверка на римскую систему счисления
 		if strings.ContainsAny(input, "VIX") {
+			// Оба ли операнда являются числами в римской системе счисления
 			if strings.ContainsAny(splittedInput[0], "VIX") != strings.ContainsAny(splittedInput[2], "VIX") {
 				fmt.Println("Вывод ошибки, так как используются одновременно разные системы счисления.")
 				break
@@ -62,6 +71,7 @@ func main() {
 	}
 }
 
+// EvalRoman Обработка математических выражений с числами в римской системе счисления
 func EvalRoman(exp []string) (string, int) {
 	var err int
 	exp[0], err = RomanToArab(exp[0])
@@ -83,6 +93,7 @@ func EvalRoman(exp []string) (string, int) {
 	return res, 0
 }
 
+// RomanToArab Перевод чисел из римской СС в арабаскую десятичную
 func RomanToArab(val string) (string, int) {
 	var res string
 	switch val {
@@ -113,6 +124,7 @@ func RomanToArab(val string) (string, int) {
 	return res, 0
 }
 
+// ArabToRoman Перевод чисел из Арабской десятичной СС в Римскую
 func ArabToRoman(val string) (string, int) {
 	var res string
 	switch val {
@@ -137,17 +149,24 @@ func ArabToRoman(val string) (string, int) {
 	case "10":
 		res = "X"
 	default:
+		// Проверка на отрицательность числа
 		if strings.Contains(val, "-") {
+			// Код ошибки для отрицательного ответа в римской СС: 2
 			return res, 2
-		} else if val == "0" {
+		} else
+		// Проверка на равенство нулю
+		if val == "0" {
+			// Код ошибки для нулевого ответа в римской СС: 3
 			return res, 3
 		}
+		// Код ошибки для числа вне диапозона [1; 10]
 		return res, 1
 	}
 
 	return res, 0
 }
 
+// EvalArab Обработка математических выражений в Арабской десятичной системе счисления
 func EvalArab(exp []string) (string, int) {
 	x, _ := strconv.Atoi(exp[0])
 	y, _ := strconv.Atoi(exp[2])
